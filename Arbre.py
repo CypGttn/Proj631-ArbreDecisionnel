@@ -1,123 +1,32 @@
-# -*- coding: utf-8 -*-
-"""
-RTree module to build and manage rooted tree
-"""
-
-class Node :
-    """
-    A node is defind by a value and a list of child
-    """
-    def __init__(self, value,children):
-        """
-        """
-        self.value = value
-        self.children = children
-        
-    def get_values(self):
-        """Return the value of the node
-        """
-        return self.value
-    
-    def get_children(self):
-        """Return children of the node
-        """
-        return self.children
-    
-    def is_leaf(self):
-        """Return true if the node is a leaf
-        """
-        return self.get_children() == []
-    
-    def get_descending(self, liste):
-        """
-        create a list with all the descendants
-        """
-        children_list = self.get_children()
-        liste = liste + children_list
-        
-        for elt in children_list:
-            elt.get_descending(liste)
-            
-        print(liste)
-            
-    
-
-        
-        
-        
-        
-    
-class Rtree(Node):
-    """
-    A rooted tree is represented by
-    A set of vertices
-    A set of edges
-    """
-    def __init__(self, root = None):
+from math import log
+class AB_Liste:
+    def __init__(self, root, children=[]):
         self.root = root
-    
-    def get_root(self):
-        """
-        Return the root of rooted tree
-        root : Rtree → Node
-        """
-        return self.root 
+        
+    def affichage(self):
+        print(self.root)
 
-    def sub_tree(self):
-        """
-        Return a list of all subtrees of the root
-        """
-        #Get all the children of the tree
-        root_children  = self.get_root().get_children()
-        sub= []
-        for k in root_children :
-            sub.append(Rtree(k))
-        return sub
-    
-    def display_depth(self):
-        """
-        Return the label by a display by depth
-        """
-        if self.get_root().is_leaf() :
-            print(self.get_root().get_values())
-        else :
-            print(self.get_root().get_values())
-            subtree_list = self.sub_tree()
-            for i in subtree_list :
-                i.display_depth()
-                
-    def display_width1(self):
-        """
-        Return the label by a display by depth
-        """
-        
-        if not self.get_root().is_leaf() :
-            
-            child_list = self.get_root().get_children()
-            for f in child_list:
-                print(f.get_values())
-            
-            subtree_list = self.sub_tree()
-            for i in subtree_list :
-                i.display_width1()
-                
-    def display_width(self):
-        """
-        Display the tree by width
-        """
-        print(self.get_root().get_values())
-        self.display_width1()
-        
-    def get_father(self, bebe):
-        """
-        Return the father of a node in parameter
-        """
-        if not self.get_root().is_leaf():
-            children_list= self.get_root().get_children()
-            if bebe in children_list:
-                print(self.get_root().get_values())
-            else:
-                subtree = self.sub_tree()
-                for sub in subtree:
-                    sub.get_father(bebe)
-    
+
+class Node: 
+    def __init__(self, value, condition):
+        self.value = value
+        self.condition = condition
+
+node1=Node("outlook", ["sunny", "overcast", "rain"])   
+node2=Node("temperature", ["cool", "mild", "hot"])
+node3=Node("humidity", ["high", "normal"])
+node4=Node("windy", ["true", "false"])
+
+arbre=AB_Liste(node1)
+print(arbre.affichage)
+
+def calcul_I(p,n):
+    return (-p/(p+n))*log(2)*(p/(p+n))-((n/p+n)*log(2)*(n/(p+n)))
+
+def calcul_E(A, p, n):
+    somme = 0
+    for i in range(1,len(A)+1) :
+        somme += (()/(p+n))*calcul_I(p,n)
+
+def calcul_gain(A,p,n):
+    return calcul_I(p,n)-calcul_E(A)
