@@ -367,5 +367,5 @@ arbre = creation_arbre(dico)
 matrice = np.array([[0,0],[0,0]])
 #On incrémente la matrice de confusion
 matrice_conf = predire(arbre, dico, matrice)
-print(f"La matrice de confusion est la suivant : {matrice_conf}")
+print(f"La matrice de confusion est la suivant : \n {matrice_conf}")
 
