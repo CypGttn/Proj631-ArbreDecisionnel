@@ -354,7 +354,8 @@ def predire(arbre, dictionnaire, matrice):
 #########################################################################################################################
 
 #On initilise la liste avec le dictionnaire à partir du nom du fichier
-dico = creation_dictionnaire("golf")
+nom_fichier = "golf"
+dico = creation_dictionnaire(nom_fichier)
 print(f"La liste contenant les données sous la forme d'un dictionnaire est le suivant : {dico} ")
 
 #on affiche le premier element pour créer la racine
