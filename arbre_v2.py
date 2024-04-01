@@ -318,53 +318,52 @@ def creation_arbre(dictionnaire):
 #                                      MATRICE DE CONFUSION                                                             #
 #########################################################################################################################
 
-def predictions(nom_fichier):
-    """Retourne les possibilités de predictions pour un dictionnaire en paramètre
-    param : nom_fichier : fichier que l'on veut analyser au format csv
-    return : liste
+def predire(arbre, dictionnaire, matrice):
+    """Construit la matrice de confusion de l'arbre passé en paramètre
+    param : arbre : arbre
+            dictionnaire : liste contenant le dictionnaire avec toutes les donnees
+    return matrice : la matrice de confusion
     """
     
-    lien_fichier = str(nom_fichier) + ".csv"
-    #On apprend les différents attributs existants dans le csv
-    with open(lien_fichier,"r") as f:
-        ids = f.readlines()[0]
-        liste_id = ids.split(sep=',')
     
-    pred = liste_id[-1][:-1]
-    dico = creation_dictionnaire(nom_fichier)
-    possibilite = []
-    for element in dico[0]["donnees"]:
-        possibilite.append(element[pred])
-    return possibilite
+    if arbre.children is None :
+        yes = "yes"
+        no = "no"
+        classe = list(dictionnaire[0]["liste_valeurs_possibles"].keys())[-1]
+        if arbre.resultat == yes and dictionnaire[0]["donnees"][0][classe]==yes : 
+            matrice[0][0] +=1
+            
+        elif arbre.resultat == no and dictionnaire[0]["donnees"][0][classe]==no : 
+            matrice[1][1] +=1
+            
+        elif arbre.resultat == no and dictionnaire[0]["donnees"][0][classe]==yes : 
+            matrice[1][0] +=1
+            
+        elif arbre.resultat == yes and dictionnaire[0]["donnees"][0][classe]==yes : 
+            matrice[0][1] +=1
+            
+        print(matrice)   
+    
+    if arbre.children is not None: 
+        for child in list(arbre.children):
+            copie = copy.deepcopy(dictionnaire)
+            dico = partitionne(arbre.value, child, copie)
+            print(dico)
+            predire(arbre.children[child], dico, matrice)
+        
+    return matrice
 
-def mat_conf(dictionnaire, nom_fichier):
-    """Retourne la matrice de confusion pour un dictionnaire
-    param : dictionnaire : liste contenant les informations
-            nom_fichier : fichier existant en format csv
-    return : list : matrice 
-    """
-    #Banque de données
-    banque = predictions(nom_fichier)
-    
-    #Sur l'arbre construit
-    arbre = creation_arbre(dictionnaire)
-    # Initialiser la matrice de confusion
-    conf_matrix = [[0, 0], [0, 0]]  # une matrice 2x2 pour un modèle binaire
-    # Remplir la matrice de confusion
-    for true, pred in zip(banque, predict):
-        conf_matrix[true][pred] += 1
-    
-    return conf_matrix
 #########################################################################################################################
 #                                                TESTS                                                                  #
 #########################################################################################################################
 
 #print(partitionne("outlook", "sunny", cas_de_figures))
 dico = creation_dictionnaire("golf")
-dico2 = creation_dictionnaire("golf_bis")
-print(dico)
+
+#print(dico)
 arbre = creation_arbre(dico)
-print((arbre.children["rain"]).children["false"].resultat)
-print(predictions("golf"))
-#print(dico2)
-#print(creation_arbre(dico2))
+
+#print(arbre.children)
+print(list(arbre.children.keys()))
+matrice = np.array([[0,0],[0,0]])
+print(predire(arbre, dico, matrice))
