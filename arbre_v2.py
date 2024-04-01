@@ -1,3 +1,10 @@
+"""PROJ631 - Arbre décisionnel
+Auteur : GUITTON Cyprien IDU3 - G2
+"""
+#########################################################################################################################
+#                                     MODULES NÉCESSAIRES AU PROGRAMME                                                  #
+#########################################################################################################################
+
 from math import log
 import copy
 import numpy as np 
@@ -5,33 +12,18 @@ import numpy as np
 #########################################################################################################################
 #                             CREATION DE LA LISTE CONTENANT LE DICTIONNAIRE                                            #
 #########################################################################################################################
-#Liste des valeurs des attributs d'un attribut donné
-def outcome(dictionnaire, attribut):
-    """Pour un attribut donné, donne toutes ses valeurs possibles
-    param : dictionnaire : liste contenant les données
-            atribut : str
-    return : list
-    
-    """
-    liste_valeurs_attr = []
 
-    for element in dictionnaire[0]["donnees"]: 
-        if element[attribut] not in liste_valeurs_attr:
-            liste_valeurs_attr.append(element[attribut])
-    return liste_valeurs_attr
-
-#Creation d'une liste vide
-
-
+#Creation d'un dictionnaire à partir d'un nom de fichier
 def creation_dictionnaire(nom_fichier:str):
     """Retourne le dictionnaire associé au fichier csv passé en paramètre
     param : nom_fichier : str nom du fichier avec extension csv
-    return : liste avec les données ²
+    return : liste avec les données 
     """
+    #On initialise le liste avec les données
     cas_de_figures = []
     lien_fichier = str(nom_fichier) + ".csv"
     #On apprend les différents attributs existants dans le csv
-    with open(lien_fichier,"r") as f:
+    with open(lien_fichier,"r") as f: 
         ids = f.readlines()[0]
         liste_id = ids.split(sep=',')[:-1]
         liste_id.append(ids.split(sep=',')[-1][:-1])
@@ -47,18 +39,20 @@ def creation_dictionnaire(nom_fichier:str):
             figure = {}
             for i in range(len(liste_id)):
                 if i == len(liste_id)-1: 
+                    #On enlève le "\n" présent sur chaque dernier élément
                     figure[liste_id[i]]=mot[i][:-1]
                 else : 
                     figure[liste_id[i]]=mot[i]
             
         
             liste_figure.append(figure)
-        
+    #ON construit le dictionnaire 
     dico_global["donnees"] = liste_figure
     #On créé l'attribut liste_attr contenant tous les attributs 
     dico_global["liste_attr"]= liste_id
     inter = {}
     liste_valeurs_attr = []
+
     for attr in dico_global["liste_attr"]: 
         for element in dico_global["donnees"]:
              
@@ -69,6 +63,7 @@ def creation_dictionnaire(nom_fichier:str):
         liste_valeurs_attr = []
     dico_global["liste_valeurs_possibles"] = inter
     dico_global["liste_attr"]= liste_id[:-1]
+    #La liste apprend le dictionnaire
     cas_de_figures.append(dico_global)
     return cas_de_figures
    
@@ -80,22 +75,24 @@ def creation_dictionnaire(nom_fichier:str):
 def calcul_p(liste_dico):
     """Retourne le calcul de p pour un dictionnaire passé en paramètre
     param : liste_dico : liste contenant le dictionnaire de données
-    return : int (le nombre de play P) 
+    return : int (le nombre de play P dans l'exemple de "golf.csv") 
     """
     p = 0 
     for i in range(len(liste_dico[0]["donnees"])):
-        if liste_dico[0]["donnees"][i]["play"] == "yes" :
+        classe  = list(liste_dico[0]["liste_valeurs_possibles"].keys())[-1]
+        if liste_dico[0]["donnees"][i][classe] == liste_dico[0]["liste_valeurs_possibles"][classe][0] :
             p+=1           
     return p
 
 def calcul_n(liste_dico):
     """Retourne le calcul de n pour un dictionnaire passé en paramètre
     param : liste_dico : liste contenant le dictionnaire de données
-    return : int (le nombre de play N) 
+    return : int (le nombre de play N dans l'exemple de "golf.csv") 
     """  
     n = 0 
     for i in range(len(liste_dico[0]["donnees"])):
-        if liste_dico[0]["donnees"][i]["play"] == "no" :
+        classe  = list(liste_dico[0]["liste_valeurs_possibles"].keys())[-1]
+        if liste_dico[0]["donnees"][i][classe] == liste_dico[0]["liste_valeurs_possibles"][classe][1] :
             n+=1
     
     return n 
@@ -112,6 +109,7 @@ def calcul_I(p,n):
     else : 
         p_sur_pn = p/(p+n)
         n_sur_pn = n/(p+n)
+    #On prend en compte l'exception de la division par 0 
     if n_sur_pn == 0 or p_sur_pn == 0 : 
         return 0 
     return -p_sur_pn*log(p_sur_pn,2)-n_sur_pn*log(n_sur_pn,2)
@@ -134,8 +132,8 @@ def calcul_E(attribut, dico):
         dictionnaire_y_n[element+"_no"]=0
     #Création d'une liste avec les play pour chaque cas de figures
     for i in range(len(dico[0]["donnees"])):
-        
-        yes_no = dico[0]["donnees"][i]["play"]
+        classe  = list(dico[0]["liste_valeurs_possibles"].keys())[-1]
+        yes_no = dico[0]["donnees"][i][classe]
         var = dico[0]["donnees"][i][attribut]
         if yes_no == "yes": 
             dictionnaire_y_n[var+"_"+yes_no]+=1
@@ -165,8 +163,7 @@ def calcul_gain(A,p,n, dico):
 #                                        CHOIX PREMIER NOEUD                                                            #
 #########################################################################################################################
 
-#Creation de noeud
-
+#Classe Noeud
 class Node: 
     def __init__(self, attribut:str=None, value=None, children=None, resultat=None):
         self.value = value
@@ -184,13 +181,12 @@ def best_attr(dictionnaire):
     return : str
     """
     liste_id = dictionnaire[0]["liste_attr"]
-    
-    #liste_id.append(list(dictionnaire[0]["donnees"][1].keys())[:-1])
-      
+    #On initilise le choix en prenant la première valeur possible dans la liste des attributs disponibles
     choix = liste_id[0]
     p = calcul_p(dictionnaire)
     n = calcul_n(dictionnaire)
     val_choix = calcul_gain(choix,p,n, dictionnaire)
+    #On compare le premier choix initialisé aux autres possibilités
     for element in liste_id[1:]:
         if calcul_gain(element,p,n, dictionnaire) > val_choix:
             choix = element 
@@ -209,12 +205,13 @@ def partitionne(attribut, valeur_attribut, dictionnaire):
     dico = dictionnaire[0]["donnees"]
     
     liste_parti = []
+    #On séléctionne les élements de l'ancien dictionnaire pour lesquels la valeur de l'attribut est la bonne
     for i in range(len(dico)):
         if dico[i][attribut] == valeur_attribut: 
             liste_parti.append(dico[i])
     liste_ids = dictionnaire[0]["liste_attr"]
     liste_ids.remove(attribut)
-                 
+    #On créé un nouveau dictionnaire en se basant sur le même format que la création du dictionnaire de la fonction "creation_dictionnaire"
     dictionnaire_parti = {}
     dictionnaire_parti["donnees"]=liste_parti
     dictionnaire_parti["liste_attr"]=liste_ids
@@ -267,9 +264,9 @@ def creation_arbre(dictionnaire):
         var = list(dictionnaire[0]["liste_valeurs_possibles"].values())[-1][0]
         return Node(resultat = var)
     
-    #Condition d'arret 3: Tous les attributs ont été utilisés sur la branche en cours de développement, auquel cas une
+    #Troisième condition d'arrêt: Tous les attributs ont été utilisés sur la branche en cours de développement, auquel cas une
     #feuille est retournée avec la classe majoritaire parmi les exemples associés au noeud courant.
-    if len(dictionnaire[0]["liste_attr"]) == 1: # il ne reste que la classe
+    if len(dictionnaire[0]["liste_attr"]) == 1: # il ne reste que la classe (play dans le cas de "golf.csv")
         val1 = list(dictionnaire[0]["liste_valeurs_possibles"].values())[-1][0]
         
         val2 = list(dictionnaire[0]["liste_valeurs_possibles"].values())[-1][1]
@@ -281,11 +278,10 @@ def creation_arbre(dictionnaire):
             return Node(resultat=val2)
         else:
             return Node()
-    
+    #On choix le meilleur attribut pour construire l'arbre
     best_attribut = best_attr(dictionnaire)
     print(f"Le meilleur attribut est : {best_attribut}")
-    # liste_apres_suppr = dictionnaire[0]["liste_attr"].remove(best_attribut)
-    # dictionnaire[0]["liste_attr"] = liste_apres_suppr
+    
     liste_val_best_attr = []
     if best_attribut == None : 
         val1 = list(dictionnaire[0]["liste_valeurs_possibles"].values())[-1][0]
@@ -301,6 +297,7 @@ def creation_arbre(dictionnaire):
             return Node()
         
     else : 
+        #Dans le cas où il existe un meilleur attribut, on créé le sous arbre 
         for element in dictionnaire[0]["donnees"]: 
             if element[best_attribut] not in liste_val_best_attr:
                 liste_val_best_attr.append(element[best_attribut])
@@ -324,12 +321,13 @@ def predire(arbre, dictionnaire, matrice):
             dictionnaire : liste contenant le dictionnaire avec toutes les donnees
     return matrice : la matrice de confusion
     """
-    
-    
+    #Condition d'arrêt : l'arbre est une feuille
+    #Dans cas on incrémente la matrice de confusion
     if arbre.children is None :
         yes = "yes"
         no = "no"
         classe = list(dictionnaire[0]["liste_valeurs_possibles"].keys())[-1]
+        #On compare les resultats des branches puis on incrémente la matrice
         if arbre.resultat == yes and dictionnaire[0]["donnees"][0][classe]==yes : 
             matrice[0][0] +=1
             
@@ -341,14 +339,12 @@ def predire(arbre, dictionnaire, matrice):
             
         elif arbre.resultat == yes and dictionnaire[0]["donnees"][0][classe]==yes : 
             matrice[0][1] +=1
-            
-        print(matrice)   
-    
+               
+    #S'il existe des enfants on parcourt l'arbre jusqu'à atteindre une feuille
     if arbre.children is not None: 
         for child in list(arbre.children):
             copie = copy.deepcopy(dictionnaire)
             dico = partitionne(arbre.value, child, copie)
-            print(dico)
             predire(arbre.children[child], dico, matrice)
         
     return matrice
@@ -357,13 +353,19 @@ def predire(arbre, dictionnaire, matrice):
 #                                                TESTS                                                                  #
 #########################################################################################################################
 
-#print(partitionne("outlook", "sunny", cas_de_figures))
+#On initilise la liste avec le dictionnaire à partir du nom du fichier
 dico = creation_dictionnaire("golf")
+print(f"La liste contenant les données sous la forme d'un dictionnaire est le suivant : {dico} ")
 
-#print(dico)
+#on affiche le premier element pour créer la racine
+print(f"La racine sera l'attribut : {best_attr(dico)}")
+
+#On créé l'arbre à partir du dictionnaire 
 arbre = creation_arbre(dico)
 
-#print(arbre.children)
-print(list(arbre.children.keys()))
+#On initialise la matrice de confusion avec des 0
 matrice = np.array([[0,0],[0,0]])
-print(predire(arbre, dico, matrice))
+#On incrémente la matrice de confusion
+matrice_conf = predire(arbre, dico, matrice)
+print(f"La matrice de confusion est la suivant : {matrice_conf}")
+
