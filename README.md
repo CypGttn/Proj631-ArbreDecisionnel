@@ -1,6 +1,7 @@
 #Proj631 - Arbre décisionnel
 
 Auteur : GUITTON Cyprien
+Langage de programmation : Python
 
 Le but de ce programme est à partir d'un fichier csv contenant différents attributs avec différentes valeurs et une décision à son extrémité de créer l'arbre décision de fichier.
 Pour cela, à partir du nom du fichier, on créé une liste contenant un dictionnaire avec trois clés : 
@@ -21,3 +22,6 @@ UTILISATION
 Pour utiliser ce programme, vous pouvez télécharger le git et ouvrir le fichier "arbre_v2".
 Avant de lancer le programme, vérifiez que les modules "math", "copy" et "numpy" sont importés dans votre executeur python.
 Vous pourrez lancer le programme, le fichier par défaut est "golf.csv" mais vous pouvez changer le nom du fichier à la ligne 357.
+
+Une fois lancé, le programme affichera dans un premier temps le dictionnaire créé, puis affichera le meilleur attribut pour la racine de l'arbre.
+Ensuite l'arbre puis la matrice de confusion seront crées. Enfin le programme affichera la matrice de confusion.
